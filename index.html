@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f6b14b" />
+    <meta name="description" content="一只适合上班间隙陪伴你的可爱白兔。" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="stylesheet" href="./styles.css" />
+    <title>兔老大的摸鱼小窝</title>
+  </head>
+  <body>
+    <main id="game" class="app-shell" aria-label="兔老大养宠小程序">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">🐰</span>
+          <div>
+            <p class="eyebrow">摸鱼小窝</p>
+            <h1>兔老大</h1>
+          </div>
+        </div>
+        <div class="top-actions">
+          <div class="level-pill" title="亲密等级">
+            <span>LV.<b id="level">1</b></span>
+            <i><em id="xp-bar"></em></i>
+          </div>
+          <button id="sound-btn" class="icon-btn" type="button" aria-label="切换音效">🔊</button>
+          <button id="boss-btn" class="boss-btn" type="button" title="快捷键 Esc">
+            <span>▦</span> 工作模式
+          </button>
+        </div>
+      </header>
+
+      <section class="dashboard">
+        <aside class="status-card card">
+          <div class="card-title">
+            <div>
+              <p class="eyebrow">今日状态</p>
+              <h2 id="mood-title">元气满满</h2>
+            </div>
+            <span id="online-badge" class="online-badge">本机存档</span>
+          </div>
+
+          <div class="stat-list">
+            <div class="stat">
+              <div class="stat-label"><span>🥕 饱食</span><b id="hunger-value">82</b></div>
+              <div class="meter hunger"><i id="hunger-bar"></i></div>
+            </div>
+            <div class="stat">
+              <div class="stat-label"><span>💗 心情</span><b id="mood-value">76</b></div>
+              <div class="meter mood"><i id="mood-bar"></i></div>
+            </div>
+            <div class="stat">
+              <div class="stat-label"><span>⚡ 精力</span><b id="energy-value">68</b></div>
+              <div class="meter energy"><i id="energy-bar"></i></div>
+            </div>
+            <div class="stat">
+              <div class="stat-label"><span>✨ 亲密</span><b id="bond-value">12</b></div>
+              <div class="meter bond"><i id="bond-bar"></i></div>
+            </div>
+          </div>
+
+          <div class="wallet">
+            <span class="carrot-coin">🥕</span>
+            <div><small>胡萝卜币</small><strong id="coins">36</strong></div>
+            <button id="gift-btn" type="button">每日礼物</button>
+          </div>
+
+          <div class="save-tools">
+            <button id="export-btn" type="button">导出存档</button>
+            <label for="import-file" tabindex="0">导入存档</label>
+            <input id="import-file" type="file" accept="application/json,.json" />
+          </div>
+        </aside>
+
+        <section class="pet-room card" aria-label="宠物房间">
+          <div class="window-scene" aria-hidden="true">
+            <div class="cloud cloud-a"></div>
+            <div class="cloud cloud-b"></div>
+            <div class="city"></div>
+          </div>
+          <div class="plant" aria-hidden="true"><span>🌿</span></div>
+          <div class="desk-lamp" aria-hidden="true"><i></i><b></b></div>
+
+          <div id="speech" class="speech" role="status">你终于来啦，今天也一起摸会儿鱼吧！</div>
+          <button id="pet-stage" class="pet-stage" type="button" aria-label="摸摸兔老大">
+            <span class="pet-glow"></span>
+            <img id="pet-image" src="./5.jpg" alt="可爱的白兔宠物" draggable="false" />
+            <span id="accessory" class="accessory" aria-hidden="true"></span>
+            <span id="reaction" class="reaction" aria-hidden="true"></span>
+          </button>
+          <div class="rug" aria-hidden="true"></div>
+          <p class="pet-hint">点点兔老大，也可以直接摸摸它</p>
+        </section>
+
+        <aside class="activity-card card">
+          <div class="card-title">
+            <div>
+              <p class="eyebrow">陪它一会儿</p>
+              <h2>互动</h2>
+            </div>
+            <span id="clock">09:41</span>
+          </div>
+
+          <div class="action-grid">
+            <button class="action feed" data-action="feed" type="button">
+              <span>🥕</span><b>喂食</b><small>饱食 +18</small>
+            </button>
+            <button class="action pet" data-action="pet" type="button">
+              <span>🫳</span><b>摸摸</b><small>心情 +12</small>
+            </button>
+            <button class="action play" data-action="play" type="button">
+              <span>🧶</span><b>玩耍</b><small>亲密 +4</small>
+            </button>
+            <button class="action sleep" data-action="sleep" type="button">
+              <span>🌙</span><b>睡觉</b><small>精力恢复</small>
+            </button>
+          </div>
+
+          <div class="closet">
+            <div class="closet-head">
+              <div><p class="eyebrow">小衣柜</p><h3>今日造型</h3></div>
+              <small>点击切换</small>
+            </div>
+            <div class="closet-items" role="group" aria-label="宠物装扮">
+              <button class="closet-item active" data-accessory="" type="button" title="原本的样子">✓</button>
+              <button class="closet-item" data-accessory="🎀" type="button" title="粉色蝴蝶结">🎀</button>
+              <button class="closet-item locked" data-accessory="🕶️" data-price="60" type="button" title="60 胡萝卜币">🕶️<i>60</i></button>
+              <button class="closet-item locked" data-accessory="👑" data-price="120" type="button" title="120 胡萝卜币">👑<i>120</i></button>
+            </div>
+          </div>
+
+          <div class="tip">
+            <span>⌨</span>
+            <p><b>摸鱼提示</b><br />按 <kbd>Esc</kbd> 一秒切到工作页</p>
+          </div>
+        </aside>
+      </section>
+
+      <footer>
+        <span id="save-status">刚刚自动保存</span>
+        <span>所有数据只保存在这台电脑</span>
+      </footer>
+    </main>
+
+    <section id="boss-mode" class="boss-mode" hidden aria-label="工作待办">
+      <header class="work-header">
+        <div class="work-logo">N</div>
+        <div><h1>今日工作台</h1><p id="work-date">2026年7月24日 星期五</p></div>
+        <div class="work-avatar">我</div>
+      </header>
+      <div class="work-grid">
+        <section class="work-card span-two">
+          <div class="work-card-head"><h2>本周重点</h2><span>进度 68%</span></div>
+          <div class="project-row">
+            <i class="project-icon blue">Q3</i>
+            <div><b>季度项目资料整理</b><p>更新执行节点与风险说明</p></div>
+            <span class="tag">进行中</span>
+          </div>
+          <div class="progress"><i></i></div>
+        </section>
+        <section class="work-card">
+          <div class="work-card-head"><h2>日程</h2><span>今天</span></div>
+          <ol class="timeline">
+            <li><time>10:00</time><div><b>项目同步会</b><p>第三会议室</p></div></li>
+            <li><time>14:30</time><div><b>需求评审</b><p>线上会议</p></div></li>
+            <li><time>16:00</time><div><b>周报整理</b><p>个人任务</p></div></li>
+          </ol>
+        </section>
+        <section class="work-card span-two">
+          <div class="work-card-head"><h2>我的待办</h2><button id="add-task" type="button">＋ 新建任务</button></div>
+          <ul id="task-list" class="task-list">
+            <li><input type="checkbox" /><span>整理本周项目进展与数据</span><em>今天</em></li>
+            <li><input type="checkbox" /><span>回复合作方的确认邮件</span><em>今天</em></li>
+            <li><input type="checkbox" checked /><span>提交会议纪要</span><em>已完成</em></li>
+          </ul>
+        </section>
+        <section class="work-card">
+          <div class="work-card-head"><h2>专注时间</h2><span>本周</span></div>
+          <div class="focus-number">6.4<small>小时</small></div>
+          <div class="mini-bars" aria-hidden="true">
+            <i style="height: 32%"></i><i style="height: 54%"></i><i style="height: 45%"></i>
+            <i style="height: 82%"></i><i style="height: 67%"></i><i style="height: 24%"></i><i style="height: 12%"></i>
+          </div>
+          <p class="secret-hint">按 Esc 返回</p>
+        </section>
+      </div>
+    </section>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="./app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,11 @@
+# Local runtime state
+.rabbit-pet-port
+
+# Local tools and downloads
+tools/
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

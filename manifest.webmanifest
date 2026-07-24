@@ -1,0 +1,18 @@
+{
+  "name": "兔老大的摸鱼小窝",
+  "short_name": "兔老大",
+  "description": "适合上班间隙陪伴你的离线养宠小程序",
+  "lang": "zh-CN",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f8f1e7",
+  "theme_color": "#f6b14b",
+  "icons": [
+    {
+      "src": "./5.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ]
+}
