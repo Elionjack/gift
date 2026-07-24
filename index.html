@@ -7,9 +7,40 @@
     <meta name="description" content="一只适合上班间隙陪伴你的可爱白兔。" />
     <link rel="manifest" href="./manifest.webmanifest" />
     <link rel="stylesheet" href="./styles.css" />
-    <title>兔老大的摸鱼小窝</title>
+    <title>苳苳的小兔｜摸鱼小窝</title>
   </head>
   <body>
+    <section id="gift-intro" class="gift-intro" aria-label="苳苳的小兔启动动画">
+      <button id="intro-skip" class="intro-skip" type="button">跳过</button>
+      <div class="intro-stage" aria-hidden="true">
+        <div class="intro-stars">
+          <i>✦</i><i>♥</i><i>✦</i><i>●</i><i>♥</i><i>✦</i>
+        </div>
+        <div class="intro-bunny">
+          <span class="bunny-ear ear-left"></span>
+          <span class="bunny-ear ear-right"></span>
+          <img src="./5.jpg" alt="" />
+          <span class="bunny-paw paw-left">◕</span>
+          <span class="bunny-paw paw-right">◕</span>
+        </div>
+        <div class="intro-gift">
+          <div class="gift-card">
+            <small>一份只属于你的陪伴</small>
+            <strong>苳苳的小兔</strong>
+            <span>🐰</span>
+          </div>
+          <div class="gift-lid"><i></i></div>
+          <div class="gift-box"><i></i></div>
+          <div class="loose-ribbon ribbon-left"></div>
+          <div class="loose-ribbon ribbon-right"></div>
+        </div>
+      </div>
+      <div class="intro-caption">
+        <p id="intro-caption-text">小兔发现了一份礼物……</p>
+        <span></span><span></span><span></span>
+      </div>
+    </section>
+
     <main id="game" class="app-shell" aria-label="兔老大养宠小程序">
       <header class="topbar">
         <div class="brand">
@@ -70,6 +101,7 @@
             <button id="export-btn" type="button">导出存档</button>
             <label for="import-file" tabindex="0">导入存档</label>
             <input id="import-file" type="file" accept="application/json,.json" />
+            <button id="reset-btn" class="reset-btn" type="button">归零养成进度</button>
           </div>
         </aside>
 
@@ -114,6 +146,11 @@
             </button>
             <button class="action sleep" data-action="sleep" type="button">
               <span>🌙</span><b>睡觉</b><small>精力恢复</small>
+            </button>
+            <button id="worry-btn" class="action worry" type="button">
+              <span>💬</span>
+              <span class="action-copy"><b>倾听烦恼</b><small>说给小兔听，它会替你记住</small></span>
+              <em id="worry-count">0 条</em>
             </button>
           </div>
 
@@ -184,6 +221,33 @@
           </div>
           <p class="secret-hint">按 Esc 返回</p>
         </section>
+      </div>
+    </section>
+
+    <section id="worry-modal" class="modal-backdrop" hidden>
+      <div class="worry-dialog" role="dialog" aria-modal="true" aria-labelledby="worry-title">
+        <header class="worry-header">
+          <div class="worry-avatar"><img src="./2.jpg" alt="" /></div>
+          <div>
+            <p class="eyebrow">兔老大认真听着呢</p>
+            <h2 id="worry-title">把烦恼说给我听吧</h2>
+          </div>
+          <button id="worry-close" class="modal-close" type="button" aria-label="关闭">×</button>
+        </header>
+        <form id="worry-form" class="worry-form">
+          <label for="worry-text">今天发生了什么？</label>
+          <textarea id="worry-text" maxlength="600" rows="4" placeholder="慢慢说，不着急……"></textarea>
+          <div class="worry-form-foot">
+            <span>🔒 仅保存在这台电脑，不会上传</span>
+            <span><b id="worry-length">0</b>/600</span>
+          </div>
+          <button class="worry-save" type="submit">交给小兔保管</button>
+        </form>
+        <div class="worry-history-head">
+          <div><p class="eyebrow">心事小抽屉</p><h3>以前说过的烦恼</h3></div>
+          <span id="worry-total">0 条记录</span>
+        </div>
+        <div id="worry-list" class="worry-list"></div>
       </div>
     </section>
 

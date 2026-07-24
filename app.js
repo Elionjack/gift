@@ -3,6 +3,7 @@
 
   const SAVE_KEY = "rabbit-boss-pet-v1";
   const TASK_KEY = "rabbit-boss-work-tasks-v1";
+  const WORRY_KEY = "rabbit-boss-worries-v1";
   const OFFLINE_CAP_MS = 8 * 60 * 60 * 1000;
   const stateDefaults = {
     version: 1,
@@ -47,6 +48,7 @@
   };
 
   let state = loadState();
+  let worries = loadWorries();
   let toastTimer = 0;
   let restoreImageTimer = 0;
   let audioContext = null;
@@ -66,7 +68,11 @@
     reaction: $("#reaction"),
     accessory: $("#accessory"),
     saveStatus: $("#save-status"),
-    toast: $("#toast")
+    toast: $("#toast"),
+    intro: $("#gift-intro"),
+    worryModal: $("#worry-modal"),
+    worryText: $("#worry-text"),
+    worryList: $("#worry-list")
   };
 
   function loadState() {
@@ -75,6 +81,15 @@
       return parsed && parsed.version === 1 ? { ...stateDefaults, ...parsed } : { ...stateDefaults };
     } catch {
       return { ...stateDefaults };
+    }
+  }
+
+  function loadWorries() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(WORRY_KEY));
+      return Array.isArray(parsed) ? parsed.filter((item) => item && typeof item.text === "string") : [];
+    } catch {
+      return [];
     }
   }
 
@@ -278,7 +293,7 @@
     const show = typeof force === "boolean" ? force : els.boss.hidden;
     els.game.hidden = show;
     els.boss.hidden = !show;
-    document.title = show ? "今日工作台" : "兔老大的摸鱼小窝";
+    document.title = show ? "今日工作台" : "苳苳的小兔｜摸鱼小窝";
     if (show) saveState("已暂停并保存");
   }
 
@@ -292,6 +307,27 @@
     anchor.click();
     URL.revokeObjectURL(url);
     showToast("存档已导出");
+  }
+
+  function resetProgress() {
+    const confirmed = window.confirm(
+      "确定要将养成进度归零吗？\n\n等级、状态、胡萝卜币、装扮和每日礼物记录都会重置；烦恼记录和工作模式里的待办不会删除。"
+    );
+    if (!confirmed) return;
+
+    localStorage.removeItem(SAVE_KEY);
+    state = {
+      ...stateDefaults,
+      createdAt: Date.now(),
+      lastSeen: Date.now()
+    };
+    clearTimeout(restoreImageTimer);
+    setExpression("idle", 0);
+    say("重新认识一下吧！今天也请多多关照。");
+    render();
+    saveState("养成进度已归零");
+    popReaction("🌱");
+    showToast("养成进度已归零");
   }
 
   function importSave(file) {
@@ -399,8 +435,140 @@
     localStorage.setItem(TASK_KEY, JSON.stringify(tasks));
   }
 
+  function initGiftIntro() {
+    const intro = els.intro;
+    const caption = $("#intro-caption-text");
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const timing = reducedMotion
+      ? { arrive: 80, rummage: 350, open: 760, title: 1150, leave: 2200 }
+      : { arrive: 280, rummage: 1100, open: 2550, title: 3250, leave: 4850 };
+
+    document.body.classList.add("intro-active");
+    window.setTimeout(() => intro.classList.add("phase-arrive"), timing.arrive);
+    window.setTimeout(() => {
+      intro.classList.add("phase-rummage");
+      caption.textContent = "小兔正在努力拆开丝带……";
+    }, timing.rummage);
+    window.setTimeout(() => {
+      intro.classList.remove("phase-rummage");
+      intro.classList.add("phase-open");
+      caption.textContent = "呀，礼物打开啦！";
+    }, timing.open);
+    window.setTimeout(() => {
+      intro.classList.add("phase-title");
+      caption.textContent = "欢迎回到苳苳的小兔";
+    }, timing.title);
+    window.setTimeout(finishGiftIntro, timing.leave);
+    $("#intro-skip").addEventListener("click", finishGiftIntro);
+  }
+
+  function finishGiftIntro() {
+    if (els.intro.hidden || els.intro.classList.contains("leaving")) return;
+    els.intro.classList.add("leaving");
+    document.body.classList.remove("intro-active");
+    window.setTimeout(() => {
+      els.intro.hidden = true;
+      els.intro.classList.remove("leaving");
+    }, 680);
+  }
+
+  function saveWorries() {
+    localStorage.setItem(WORRY_KEY, JSON.stringify(worries));
+  }
+
+  function renderWorries() {
+    const countText = `${worries.length} 条`;
+    $("#worry-count").textContent = countText;
+    $("#worry-total").textContent = `${worries.length} 条记录`;
+    els.worryList.replaceChildren();
+
+    if (worries.length === 0) {
+      const empty = document.createElement("div");
+      empty.className = "worry-empty";
+      empty.textContent = "这里还是空的。小兔会安静等你想说的时候。";
+      els.worryList.append(empty);
+      return;
+    }
+
+    const formatter = new Intl.DateTimeFormat("zh-CN", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+    worries.forEach((worry) => {
+      const entry = document.createElement("article");
+      entry.className = "worry-entry";
+      const time = document.createElement("time");
+      const text = document.createElement("p");
+      const remove = document.createElement("button");
+      time.dateTime = new Date(worry.createdAt).toISOString();
+      time.textContent = formatter.format(new Date(worry.createdAt));
+      text.textContent = worry.text;
+      remove.type = "button";
+      remove.className = "worry-delete";
+      remove.dataset.id = worry.id;
+      remove.setAttribute("aria-label", "删除这条烦恼");
+      remove.textContent = "×";
+      entry.append(time, text, remove);
+      els.worryList.append(entry);
+    });
+  }
+
+  function openWorryModal() {
+    els.worryModal.hidden = false;
+    document.body.style.overflow = "hidden";
+    renderWorries();
+    window.setTimeout(() => els.worryText.focus(), 60);
+  }
+
+  function closeWorryModal() {
+    els.worryModal.hidden = true;
+    document.body.style.overflow = "";
+  }
+
+  function keepWorry(event) {
+    event.preventDefault();
+    const text = els.worryText.value.trim();
+    if (!text) {
+      els.worryText.focus();
+      showToast("先把想说的话写下来吧");
+      return;
+    }
+
+    worries.unshift({
+      id: window.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      text,
+      createdAt: Date.now()
+    });
+    worries = worries.slice(0, 200);
+    saveWorries();
+    els.worryText.value = "";
+    $("#worry-length").textContent = "0";
+    closeWorryModal();
+
+    const comfort = [
+      "我听见了。今天已经很不容易了，先陪你安静一会儿。",
+      "这件事一定让你很难受。没关系，我会替你把它好好收着。",
+      "谢谢你愿意告诉我。你不用现在就解决所有事情。",
+      "先深呼吸一下吧。本老大就在这里，不会笑你的。",
+      "你的感受很重要。今天也要对自己温柔一点。"
+    ];
+    changeStat("bond", 3);
+    changeStat("mood", 5);
+    gainXp(7);
+    setExpression("happy", 3200);
+    say(comfort[Math.floor(Math.random() * comfort.length)]);
+    popReaction("💗");
+    render();
+    saveState("烦恼已由小兔保管");
+    renderWorries();
+    showToast("小兔已经替你记下来了");
+  }
+
   function bindEvents() {
-    $$(".action").forEach((button) => button.addEventListener("click", () => interact(button.dataset.action)));
+    $$(".action[data-action]").forEach((button) => button.addEventListener("click", () => interact(button.dataset.action)));
     els.stage.addEventListener("click", () => interact("pet"));
     $("#gift-btn").addEventListener("click", claimGift);
     $("#sound-btn").addEventListener("click", () => {
@@ -410,6 +578,25 @@
     });
     $("#boss-btn").addEventListener("click", () => toggleBoss(true));
     $("#export-btn").addEventListener("click", exportSave);
+    $("#reset-btn").addEventListener("click", resetProgress);
+    $("#worry-btn").addEventListener("click", openWorryModal);
+    $("#worry-close").addEventListener("click", closeWorryModal);
+    $("#worry-form").addEventListener("submit", keepWorry);
+    els.worryText.addEventListener("input", () => {
+      $("#worry-length").textContent = String(els.worryText.value.length);
+    });
+    els.worryModal.addEventListener("click", (event) => {
+      if (event.target === els.worryModal) closeWorryModal();
+    });
+    els.worryList.addEventListener("click", (event) => {
+      const button = event.target.closest(".worry-delete");
+      if (!button) return;
+      if (!window.confirm("要删掉这条烦恼记录吗？")) return;
+      worries = worries.filter((item) => item.id !== button.dataset.id);
+      saveWorries();
+      renderWorries();
+      showToast("这条烦恼已经放下了");
+    });
     $("#import-file").addEventListener("change", (event) => {
       const file = event.target.files?.[0];
       if (file) importSave(file);
@@ -419,6 +606,14 @@
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape") {
         event.preventDefault();
+        if (!els.intro.hidden) {
+          finishGiftIntro();
+          return;
+        }
+        if (!els.worryModal.hidden) {
+          closeWorryModal();
+          return;
+        }
         toggleBoss();
       }
     });
@@ -431,6 +626,8 @@
   applyOfflineProgress();
   bindEvents();
   initWorkTasks();
+  renderWorries();
+  initGiftIntro();
   setExpression(selectIdleExpression(), 0);
   render();
   saveState("欢迎回来，进度已恢复");
